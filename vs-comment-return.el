@@ -73,7 +73,7 @@
 ;;
 
 (defun vs-comment-return--before-char-string ()
-  "Get the before character as the 'string'."
+  "Get the before character as the `string'."
   (if (char-before) (string (char-before)) ""))
 
 (defun vs-comment-return--current-point-face (in-face &optional pos)
@@ -157,6 +157,18 @@
           (goto-char (line-end-position))))
       (buffer-substring (vs-comment-return--backward-until-not-comment) (point)))))
 
+(defun vs-comment-return--comment-doc-p (prefix)
+  "Return non-nil if comment (PREFIX) is a valid document."
+  (string-match-p (concat (string-trim comment-start) " ") prefix))
+
+(defun vs-comment-return--doc-only-line-p (prefix)
+  "Return non-nil when current line only contain comment.
+
+We use PREFIX for navigation; we search it, then check what is infront."
+  (save-excursion
+    (search-backward prefix)
+    (vs-comment-return--infront-first-char-at-line-p)))
+
 (defun vs-comment-return--next-line-comment-p ()
   "Return non-nil when next line is a comment."
   (save-excursion
@@ -195,13 +207,16 @@
    ;; Single line comment
    (t
     (let* ((prefix (vs-comment-return--get-comment-prefix))
+           (doc-only (vs-comment-return--doc-only-line-p prefix))
            (empty-comment (vs-comment-return--empty-comment-p prefix))
            (next-ln-comment (vs-comment-return--next-line-comment-p)))
       (apply func args)  ; make return
-      (when (and
-             (not (member (string-trim prefix) vs-comment-return-exclude-comments))
-             (vs-comment-return--current-line-empty-p)
-             (or next-ln-comment (not empty-comment)))
+      (when
+          (and doc-only
+               (vs-comment-return--comment-doc-p prefix)
+               (not (member (string-trim prefix) vs-comment-return-exclude-comments))
+               (vs-comment-return--current-line-empty-p)
+               (or next-ln-comment (not empty-comment)))
         (vs-comment-return--comment-line prefix))))))
 
 ;;
