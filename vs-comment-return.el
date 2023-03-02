@@ -166,7 +166,7 @@
 
 We use PREFIX for navigation; we search it, then check what is infront."
   (save-excursion
-    (search-backward prefix)
+    (search-backward (string-trim-left prefix) (line-beginning-position) t)
     (vs-comment-return--infront-first-char-at-line-p)))
 
 (defun vs-comment-return--next-line-comment-p ()
