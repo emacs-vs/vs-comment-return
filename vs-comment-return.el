@@ -37,6 +37,12 @@
   :group 'convenience
   :link '(url-link :tag "Repository" "https://github.com/emacs-vs/vs-comment-return"))
 
+(defcustom vs-comment-return-exclude-comments
+  '("//")
+  "Exclude these comment prefixes."
+  :type 'list
+  :group 'vs-comment-return)
+
 ;;
 ;; (@* "Entry" )
 ;;
@@ -142,10 +148,11 @@
              (empty-comment (vs-comment-return--empty-comment-p prefix))
              (next-ln-comment (vs-comment-return--next-line-comment-p)))
         (apply func args)  ; make return
-        (message "op: %s" prefix)
-        (when (vs-comment-return--current-line-empty-p)
-          (when (or next-ln-comment (not empty-comment))
-            (vs-comment-return--comment-line prefix))))
+        (when (and
+               (not (member (string-trim prefix) vs-comment-return-exclude-comments))
+               (vs-comment-return--current-line-empty-p)
+               (or next-ln-comment (not empty-comment)))
+          (vs-comment-return--comment-line prefix)))
     (apply func args)))  ; make return
 
 (provide 'vs-comment-return)
