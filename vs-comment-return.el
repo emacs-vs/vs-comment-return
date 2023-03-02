@@ -149,7 +149,6 @@
       (let* ((prefix (vs-comment-return--get-comment-prefix))
              (empty-comment (vs-comment-return--empty-comment-p prefix))
              (next-ln-comment (vs-comment-return--next-line-comment-p)))
-        (message "%s %s %s" prefix empty-comment next-ln-comment)
         (apply func args)  ; make return
         (when (and
                (not (member (string-trim prefix) vs-comment-return-exclude-comments))
