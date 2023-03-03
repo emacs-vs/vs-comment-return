@@ -31,8 +31,6 @@
 
 ;;; Code:
 
-(require 'rect)
-
 (defgroup vs-comment-return nil
   "Comment return like Visual Studio."
   :prefix "vs-comment-return-"
