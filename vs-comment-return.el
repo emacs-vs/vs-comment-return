@@ -87,8 +87,8 @@
 
 (defun vs-comment-return--goto-end-comment ()
   "Go to the end of the comment."
-  (when (vs-comment-return--comment-p)
-    (forward-char 1)
+  (when (and (vs-comment-return--comment-p) (not (eobp)))
+    (ignore-errors (forward-char 1))
     (vs-comment-return--goto-end-comment)))
 
 (defun vs-comment-return--comment-start-point ()
@@ -163,7 +163,7 @@
       (insert prefix)
       (goto-char (point-min))
       (vs-comment-return--re-search-forward-end trimmed (line-end-position))
-      (forward-char 1)
+      (ignore-errors (forward-char 1))
       (delete-region (point-min) (point))
       (string-empty-p (string-trim (buffer-string))))))
 
@@ -179,10 +179,11 @@ We use PREFIX for navigation; we search it, then check what is infront."
 
 (defun vs-comment-return--next-line-comment-p ()
   "Return non-nil when next line is a comment."
-  (save-excursion
-    (forward-line 1)
-    (end-of-line)
-    (vs-comment-return--comment-p)))
+  (unless (eobp)
+    (save-excursion
+      (forward-line 1)
+      (end-of-line)
+      (vs-comment-return--comment-p))))
 
 (defun vs-comment-return--empty-comment-p (prefix)
   "Return non-nil if current line comment is empty (PREFIX only)."
