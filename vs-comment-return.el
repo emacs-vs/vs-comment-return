@@ -121,10 +121,6 @@
     (while (re-search-forward regexp bound t)
       (backward-char repeat))))  ; Always move backward to search repeatedly!
 
-(defun vs-comment-return--current-line-empty-p ()
-  "Current line empty, but accept spaces/tabs in there.  (not absolute)."
-  (save-excursion (beginning-of-line) (looking-at "[[:space:]\t]*$")))
-
 (defun vs-comment-return--infront-first-char-at-line-p (&optional pt)
   "Return non-nil if there is nothing infront of the right from the PT."
   (save-excursion
@@ -225,7 +221,6 @@ We use PREFIX for navigation; we search it, then check what is infront."
           (and doc-only-column
                (vs-comment-return--comment-doc-p prefix)
                (not (member (string-trim prefix) vs-comment-return-exclude-comments))
-               (vs-comment-return--current-line-empty-p)
                (or next-ln-comment (not empty-comment)))
         (vs-comment-return--comment-line prefix doc-only-column))))))
 
