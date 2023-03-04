@@ -87,7 +87,8 @@
 
 (defun vs-comment-return--goto-end-comment ()
   "Go to the end of the comment."
-  (when (and (vs-comment-return--comment-p) (not (eobp)))
+  (when (and (vs-comment-return--comment-p)
+             (not (eobp)))
     (ignore-errors (forward-char 1))
     (vs-comment-return--goto-end-comment)))
 
