@@ -179,10 +179,11 @@
 the column of the line.
 
 We use PREFIX for navigation; we search it, then check what is infront."
-  (save-excursion
-    (search-backward prefix (line-beginning-position) t)
-    (when (vs-comment-return--infront-first-char-at-line-p)
-      (current-column))))
+  (when prefix
+    (save-excursion
+      (search-backward prefix (line-beginning-position) t)
+      (when (vs-comment-return--infront-first-char-at-line-p)
+        (current-column)))))
 
 (defun vs-comment-return--next-line-comment-prefix ()
   "Return non-nil when next line is a comment."
@@ -227,7 +228,8 @@ We use PREFIX for navigation; we search it, then check what is infront."
            (empty-comment   (vs-comment-return--empty-comment-p prefix))
            (prefix-next-ln  (vs-comment-return--next-line-comment-prefix))
            (next-doc-line   (vs-comment-return--comment-doc-p prefix-next-ln))
-           (column          (vs-comment-return--doc-only-line-column prefix)))
+           (column          (vs-comment-return--doc-only-line-column prefix))
+           (column-next-ln  (vs-comment-return--doc-only-line-column prefix-next-ln)))
       (apply func args)  ; make return
       (when
           (and (vs-comment-return--line-empty-p)  ; must on newline
@@ -236,7 +238,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
                     ;; Check if the command style matches.
                     (vs-comment-return--string-match-mut-p prefix-next-ln prefix)
                     ;; Check current comment and next comment is all document lines.
-                    doc-line next-doc-line)
+                    doc-line next-doc-line column-next-ln)
                    (and doc-line             ; if previous doc line
                         (not empty-comment)  ; if previous comment line is not empty
                         (not (member (string-trim prefix) vs-comment-return-inhibit-prefix)))))
