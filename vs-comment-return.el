@@ -126,11 +126,9 @@
     (while (re-search-forward regexp bound t)
       (backward-char repeat))))  ; Always move backward to search repeatedly!
 
-(defun vs-comment-return--infront-first-char-at-line-p (&optional pt)
-  "Return non-nil if there is nothing infront of the right from the PT."
-  (save-excursion
-    (when pt (goto-char pt))
-    (null (re-search-backward "[^ \t]" (line-beginning-position) t))))
+(defun vs-comment-return--line-empty-p ()
+  "Current line empty, but accept spaces/tabs in there.  (not absolute)."
+  (save-excursion (beginning-of-line) (looking-at "[[:space:]\t]*$")))
 
 ;;
 ;; (@* "Core" )
@@ -170,15 +168,13 @@
         (delete-region (point-min) (point))
         (string-empty-p (string-trim (buffer-string)))))))
 
-(defun vs-comment-return--doc-only-line-column (prefix)
-  "Return nil there is code interaction within the same line; else we return
-the column of the line.
+(defun vs-comment-return--comment-column (prefix)
+  "Return column for indenting comment.
 
 We use PREFIX for navigation; we search it, then check what is infront."
   (save-excursion
     (search-backward prefix (line-beginning-position) t)
-    (when (vs-comment-return--infront-first-char-at-line-p)
-      (current-column))))
+    (current-column)))
 
 (defun vs-comment-return--next-line-comment-prefix ()
   "Return non-nil when next line is a comment."
@@ -220,26 +216,22 @@ We use PREFIX for navigation; we search it, then check what is infront."
    (t
     (let* ((prefix          (vs-comment-return--get-comment-prefix))
            (doc-line        (vs-comment-return--comment-doc-p prefix))
-           (doc-only-column (vs-comment-return--doc-only-line-column prefix))
            (empty-comment   (vs-comment-return--empty-comment-p prefix))
            (prefix-next-ln  (vs-comment-return--next-line-comment-prefix))
            (next-doc-line   (vs-comment-return--comment-doc-p prefix-next-ln))
-           (current-ln      (line-number-at-pos nil t)))
+           (column          (vs-comment-return--comment-column prefix)))
       (apply func args)  ; make return
-      (when (or
-             (and
-              ;; Check if the command style matches.
-              (vs-comment-return--string-match-mut-p prefix-next-ln prefix)
-              ;; Check current comment and next comment is all document lines.
-              doc-line next-doc-line)
-             (and doc-only-column      ; check if there are code infront of comment.
-                  doc-line             ; if current doc line
-                  (not empty-comment)  ; if current comment line is not empty
-                  (not (member (string-trim prefix) vs-comment-return-inhibit-prefix))
-                  ;; XXX: we place line number check at last, so we can save
-                  ;; unnecessary perofmrance
-                  (not (= current-ln (line-number-at-pos nil t)))))
-        (vs-comment-return--comment-line prefix doc-only-column))))))
+      (when
+          (and (vs-comment-return--line-empty-p)  ; must on newline
+               (or (and
+                    ;; Check if the command style matches.
+                    (vs-comment-return--string-match-mut-p prefix-next-ln prefix)
+                    ;; Check current comment and next comment is all document lines.
+                    doc-line next-doc-line)
+                   (and doc-line             ; if previous doc line
+                        (not empty-comment)  ; if previous comment line is not empty
+                        (not (member (string-trim prefix) vs-comment-return-inhibit-prefix)))))
+        (vs-comment-return--comment-line prefix column))))))
 
 ;;
 ;; (@* "C-like" )
