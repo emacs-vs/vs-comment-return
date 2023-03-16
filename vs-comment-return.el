@@ -167,6 +167,9 @@
   (when (and vs-comment-return-cancel-after
              (eq last-command-event ?\n)
              (vs-comment-return--line-empty-p))
+    ;; At this point, it means we have enter the return twice in a row. The
+    ;; previous line above must be a empty comment line, which is safe to
+    ;; be removed.
     (forward-line -1)
     (delete-region (1- (line-beginning-position)) (line-end-position))
     (forward-line 1))
@@ -249,6 +252,15 @@ We use PREFIX for navigation; we search it, then check what is infront."
     (indent-to-column column))
   (insert (string-trim prefix) " "))
 
+(defun vs-comment-return--pick-shorter-prefix (prefix1 prefix2)
+  "Pick shorter prefix between PREFIX1 and PREFIX2."
+  (cond ((and (stringp prefix1) (stringp prefix2))
+         (if (<= (length prefix1) (length prefix2))
+             prefix1
+           prefix2))
+        ((stringp prefix1) prefix1)
+        (t prefix2)))
+
 (defun vs-comment-return--do-return (func args)
   "Do VS like comment return."
   (cond
@@ -269,7 +281,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
            (column-next-ln  (vs-comment-return--doc-only-line-column prefix-next-ln)))
       (apply func args)  ; make return
       (when
-          (and (vs-comment-return--line-empty-p)  ; must on newline
+          (and (vs-comment-return--infront-first-char-at-line-p)  ; must on newline
                column
                (or (and
                     ;; Check if the command style matches.
@@ -279,7 +291,26 @@ We use PREFIX for navigation; we search it, then check what is infront."
                    (and doc-line             ; if previous doc line
                         (not empty-comment)  ; if previous comment line is not empty
                         (not (member (string-trim prefix) vs-comment-return-inhibit-prefix)))))
-        (vs-comment-return--comment-line prefix column)
+        ;; Why shorter prefix is chosen? Most of the document string prefix are
+        ;; shorter one. For example,
+        ;;
+        ;; For Lua,
+        ;;
+        ;; --- (longer)
+        ;; --  (shoter)
+        ;;
+        ;; For C-like multi-line comment,
+        ;;
+        ;; /** (longer)
+        ;;  *  (shorter)
+        ;;  */
+        ;;
+        ;; In general, most programming languages uses the shorter prefix.
+        ;; It kinda make sense since it's nicer and most of them want to enlarge
+        ;; the splitter or start of the section!
+        (let ((shorter-prefix (vs-comment-return--pick-shorter-prefix prefix prefix-next-ln)))
+          (vs-comment-return--comment-line shorter-prefix column))
+        ;; Here we handle the cancel action!
         (when (and vs-comment-return-cancel-after
                    (not prefix-next-ln))  ; only happens when next line is not comment
           (add-hook 'pre-command-hook #'vs-comment-return--pre-command nil t)
