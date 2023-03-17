@@ -330,7 +330,9 @@ We use PREFIX for navigation; we search it, then check what is infront."
 (defun vs-comment-return--c-like-return ()
   "Do C-like comment return for /**/."
   (when (vs-comment-return--c-like-multiline-comment-p)
+    (delete-region (line-beginning-position) (point))
     (vs-comment-return--comment-line "* ")
+    (indent-for-tab-command)
     (when (and (not vs-comment-return-keep-suffix)
                (save-excursion (search-forward "*/" (line-end-position) t)))
       (save-excursion
