@@ -92,7 +92,8 @@
 
 (defun vs-comment-return--goto-start-comment ()
   "Go to the start of the comment."
-  (while (vs-comment-return--comment-p)
+  (while (and (vs-comment-return--comment-p)
+              comment-start-skip)
     (re-search-backward comment-start-skip nil t)))
 
 (defun vs-comment-return--goto-end-comment ()
@@ -194,7 +195,7 @@
   "Return comment prefix string."
   (save-excursion
     (end-of-line)
-    (comment-search-backward (line-beginning-position) t)
+    (ignore-errors (comment-search-backward (line-beginning-position) t))
     ;; Double check if comment exists
     (unless (= (point) (line-beginning-position))
       (unless (string= (vs-comment-return--before-char-string) " ")
@@ -235,10 +236,11 @@ We use PREFIX for navigation; we search it, then check what is infront."
 
 (defun vs-comment-return--empty-comment-p (prefix)
   "Return non-nil if current line comment is empty (PREFIX only)."
-  (let* ((line (thing-at-point 'line))
-         (line (string-trim line))
-         (content (string-replace (string-trim prefix) "" line)))
-    (string-empty-p (string-trim content))))
+  (when prefix
+    (let* ((line (thing-at-point 'line))
+           (line (string-trim line))
+           (content (string-replace (string-trim prefix) "" line)))
+      (string-empty-p (string-trim content)))))
 
 (defun vs-comment-return--advice-around (func &rest args)
   "Advice bind around return."
