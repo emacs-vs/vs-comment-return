@@ -274,7 +274,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
     (vs-comment-return--c-like-return))
    ;; Single line comment
    (t
-    (let* ((ind (current-indentation))
+    (let* ((ind             (current-indentation))
            (prefix          (vs-comment-return--get-comment-prefix))
            (doc-line        (vs-comment-return--comment-doc-p prefix))
            (empty-comment   (vs-comment-return--empty-comment-p prefix))
