@@ -274,7 +274,8 @@ We use PREFIX for navigation; we search it, then check what is infront."
     (vs-comment-return--c-like-return))
    ;; Single line comment
    (t
-    (let* ((prefix          (vs-comment-return--get-comment-prefix))
+    (let* ((ind (current-indentation))
+           (prefix          (vs-comment-return--get-comment-prefix))
            (doc-line        (vs-comment-return--comment-doc-p prefix))
            (empty-comment   (vs-comment-return--empty-comment-p prefix))
            (prefix-next-ln  (vs-comment-return--next-line-comment-prefix))
@@ -284,6 +285,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
       (apply func args)  ; make return
       (when
           (and (vs-comment-return--infront-first-char-at-line-p)  ; must on newline
+               (= ind (current-indentation))  ; Same indentation level!
                column
                (or (and
                     ;; Check if the command style matches.
