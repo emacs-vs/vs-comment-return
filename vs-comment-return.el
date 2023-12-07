@@ -274,19 +274,19 @@ We use PREFIX for navigation; we search it, then check what is infront."
     (vs-comment-return--c-like-return))
    ;; Single line comment
    (t
-    (let* ((ind             (current-indentation))
-           (prefix          (vs-comment-return--get-comment-prefix))
-           (doc-line        (vs-comment-return--comment-doc-p prefix))
-           (empty-comment   (vs-comment-return--empty-comment-p prefix))
-           (prefix-next-ln  (vs-comment-return--next-line-comment-prefix))
-           (next-doc-line   (vs-comment-return--comment-doc-p prefix-next-ln))
-           (column          (vs-comment-return--doc-only-line-column prefix))
-           (column-next-ln  (vs-comment-return--doc-only-line-column prefix-next-ln)))
+    (let* ((prefix         (vs-comment-return--get-comment-prefix))
+           (doc-line       (vs-comment-return--comment-doc-p prefix))
+           (empty-comment  (vs-comment-return--empty-comment-p prefix))
+           (prefix-next-ln (vs-comment-return--next-line-comment-prefix))
+           (next-doc-line  (vs-comment-return--comment-doc-p prefix-next-ln))
+           (column         (vs-comment-return--doc-only-line-column prefix))
+           (column-next-ln (save-excursion
+                             (forward-line 1) (end-of-line)
+                             (vs-comment-return--doc-only-line-column prefix-next-ln))))
       (apply func args)  ; make return
       (when
           (and (vs-comment-return--infront-first-char-at-line-p)  ; must on newline
-               (= ind (current-indentation))  ; Same indentation level!
-               column
+               column  ; Is comment line?
                (or (and
                     ;; Check if the command style matches.
                     (vs-comment-return--string-match-mut-p prefix-next-ln prefix)
