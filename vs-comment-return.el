@@ -251,6 +251,8 @@ We use PREFIX for navigation; we search it, then check what is infront."
 (defun vs-comment-return--comment-line (prefix &optional column)
   "Insert PREFIX comment with COLUMN for alignment."
   (when column
+    (when (vs-comment-return--line-empty-p)
+      (delete-region (line-beginning-position) (line-end-position)))
     (indent-to-column column))
   (insert (string-trim prefix) " "))
 
