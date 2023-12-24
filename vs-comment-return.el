@@ -195,7 +195,8 @@
   "Return comment prefix string."
   (save-excursion
     (end-of-line)
-    (ignore-errors (comment-search-backward (line-beginning-position) t))
+    (let ((comment-start-skip (or comment-start-skip comment-start)))
+      (ignore-errors (comment-search-backward (line-beginning-position) t)))
     ;; Double check if comment exists
     (unless (= (point) (line-beginning-position))
       (unless (string= (vs-comment-return--before-char-string) " ")
