@@ -165,7 +165,6 @@
 
 (defun vs-comment-return--post-self-insert (&rest _)
   "Execution after self insertion."
-  (msgu-unsilent (ic-message "????"))
   (when (and vs-comment-return-cancel-after
              (eq last-command-event ?\n)
              (vs-comment-return--line-empty-p))
