@@ -160,13 +160,15 @@
   "Execution after command's execution."
   ;; De-register ourselves!
   (remove-hook 'post-command-hook #'vs-comment-return--post-command t)
+  (when (memq #'vs-comment-return--post-self-insert post-self-insert-hook)
+    (run-hooks 'post-self-insert-hook))
   ;; Cancel action!
   (remove-hook 'post-self-insert-hook #'vs-comment-return--post-self-insert t))
 
 (defun vs-comment-return--post-self-insert (&rest _)
   "Execution after self insertion."
   (when (and vs-comment-return-cancel-after
-             (eq last-command-event ?\n)
+             (memq last-command-event '(?\n ?\r))
              (vs-comment-return--line-empty-p))
     ;; At this point, it means we have enter the return twice in a row. The
     ;; previous line above must be a empty comment line, which is safe to
