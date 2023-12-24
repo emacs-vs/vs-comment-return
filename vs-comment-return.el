@@ -160,6 +160,8 @@
   "Execution after command's execution."
   ;; De-register ourselves!
   (remove-hook 'post-command-hook #'vs-comment-return--post-command t)
+  ;; XXX: Don't know why `cmake-mode' doesn't run `post-self-insert-hook'
+  ;; on its own; handle it!
   (when (memq #'vs-comment-return--post-self-insert post-self-insert-hook)
     (run-hooks 'post-self-insert-hook))
   ;; Cancel action!
