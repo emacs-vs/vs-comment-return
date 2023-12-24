@@ -149,22 +149,23 @@
 (defvar-local vs-comment-return--return-last-p nil
   "Store weather we hit return twice in a row.")
 
-(defun vs-comment-return--pre-command ()
+(defun vs-comment-return--pre-command (&rest _)
   "Execution before command's execution."
   (add-hook 'post-self-insert-hook #'vs-comment-return--post-self-insert nil t)
   (add-hook 'post-command-hook #'vs-comment-return--post-command nil t)
   ;; De-register ourselves!
   (remove-hook 'pre-command-hook #'vs-comment-return--pre-command t))
 
-(defun vs-comment-return--post-command ()
+(defun vs-comment-return--post-command (&rest _)
   "Execution after command's execution."
   ;; De-register ourselves!
   (remove-hook 'post-command-hook #'vs-comment-return--post-command t)
   ;; Cancel action!
   (remove-hook 'post-self-insert-hook #'vs-comment-return--post-self-insert t))
 
-(defun vs-comment-return--post-self-insert ()
+(defun vs-comment-return--post-self-insert (&rest _)
   "Execution after self insertion."
+  (msgu-unsilent (ic-message "????"))
   (when (and vs-comment-return-cancel-after
              (eq last-command-event ?\n)
              (vs-comment-return--line-empty-p))
