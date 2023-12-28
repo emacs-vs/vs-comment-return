@@ -163,7 +163,7 @@
   ;; XXX: Don't know why `cmake-mode' doesn't run `post-self-insert-hook'
   ;; on its own; handle it!
   (when (memq #'vs-comment-return--post-self-insert post-self-insert-hook)
-    (run-hooks 'post-self-insert-hook))
+    (vs-comment-return--post-self-insert))
   ;; Cancel action!
   (remove-hook 'post-self-insert-hook #'vs-comment-return--post-self-insert t))
 
