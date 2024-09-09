@@ -1,5 +1,5 @@
 (package "vs-comment-return"
-         "0.1.0"
+         "0.2.0"
          "Comment return like Visual Studio")
 
 (website-url "https://github.com/emacs-vs/vs-comment-return")
