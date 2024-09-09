@@ -93,15 +93,20 @@
 (defun vs-comment-return--goto-start-comment ()
   "Go to the start of the comment."
   (while (and (vs-comment-return--comment-p)
-              comment-start-skip)
-    (re-search-backward comment-start-skip nil t)))
+              (not (bobp)))
+    (ignore-errors (forward-char -1)))
+  ;; Ensure the beginning of the syntax.
+  (when (re-search-backward "[[:space:]]" (line-beginning-position) t)
+    (forward-char 1)))
 
 (defun vs-comment-return--goto-end-comment ()
   "Go to the end of the comment."
-  (when (and (vs-comment-return--comment-p)
-             (not (eobp)))
-    (ignore-errors (forward-char 1))
-    (vs-comment-return--goto-end-comment)))
+  (while (and (vs-comment-return--comment-p)
+              (not (eobp)))
+    (ignore-errors (forward-char 1)))
+  ;; Ensure the end of the syntax.
+  (when (re-search-forward "[[:space:]]" (line-end-position) t)
+    (forward-char -1)))
 
 (defun vs-comment-return--comment-start-point ()
   "Return comment start point."
@@ -114,7 +119,7 @@
 (defun vs-comment-return--multiline-comment-p ()
   "Return non-nil, if current point inside multi-line comment block."
   (let* ((start (vs-comment-return--comment-start-point))
-         (end (vs-comment-return--comment-end-point))
+         (end   (vs-comment-return--comment-end-point))
          (old-major-mode major-mode)
          (start-point (1+ (- (point) start)))
          (content (buffer-substring start end)))
@@ -125,6 +130,11 @@
       (delay-mode-hooks (funcall old-major-mode))
       (ignore-errors (font-lock-ensure))
       (vs-comment-return--comment-p))))
+
+(defun vs-comment-return--indent ()
+  "Indent entire comment region."
+  (indent-region (vs-comment-return--comment-start-point)
+                 (vs-comment-return--comment-end-point)))
 
 (defun vs-comment-return--re-search-forward-end (regexp &optional bound)
   "Repeatedly search REGEXP to BOUND."
@@ -248,7 +258,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
       (string-empty-p (string-trim content)))))
 
 (defun vs-comment-return--advice-around (func &rest args)
-  "Advice bind around return."
+  "Advice bind around return (FUNC and ARGS)."
   (if (not vs-comment-return-mode)
       (apply func args)
     (vs-comment-return--do-return func args)))
@@ -271,7 +281,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
         (t prefix2)))
 
 (defun vs-comment-return--do-return (func args)
-  "Do VS like comment return."
+  "Do VS like comment return (FUNC and ARGS)."
   (cond
    ((not (vs-comment-return--comment-p))
     (apply func args))
@@ -343,7 +353,7 @@ We use PREFIX for navigation; we search it, then check what is infront."
   (when (vs-comment-return--c-like-multiline-comment-p)
     (delete-region (line-beginning-position) (point))
     (vs-comment-return--comment-line "* ")
-    (indent-for-tab-command)
+    (vs-comment-return--indent)
     (when (and (not vs-comment-return-keep-suffix)
                (save-excursion (search-forward "*/" (line-end-position) t)))
       (save-excursion
