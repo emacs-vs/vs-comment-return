@@ -40,7 +40,7 @@
 (defcustom vs-comment-return-inhibit-prefix
   '("//" "--" "#")
   "Exclude these comment prefixes."
-  :type 'list
+  :type '(list string)
   :group 'vs-comment-return)
 
 (defcustom vs-comment-return-keep-suffix nil
