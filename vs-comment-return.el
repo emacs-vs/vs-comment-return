@@ -237,7 +237,10 @@ the column of the line.
 We use PREFIX for navigation; we search it, then check what is infront."
   (when prefix
     (save-excursion
-      (search-backward (string-trim prefix) (line-beginning-position) t)
+      ;; Handle nested comment.
+      ;;
+      ;; That's why we have an empty while loop here.
+      (while (search-backward (string-trim prefix) (line-beginning-position) t))
       (when (vs-comment-return--infront-first-char-at-line-p)
         (current-column)))))
 
