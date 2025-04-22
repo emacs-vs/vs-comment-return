@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "vs-comment-return"
          "0.2.0"
          "Comment return like Visual Studio")
